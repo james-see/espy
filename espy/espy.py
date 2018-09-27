@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-
 """bootstrap.bootstrap: provides entry point main()."""
-
 
 __version__ = "0.0.1"
 # Espy 
@@ -104,7 +102,11 @@ def get_espn(selected_sport):
     # search_field.send_keys("Olabode")  
     # search_field.send_keys(Keys.RETURN)  
     # assert "Looking Back at Android Security in 2016" in driver.page_source 
-    print(driver.page_source)  
+    # print(driver.page_source)
+    soup = BeautifulSoup(driver.page_source, features="lxml")
+    soup = soup.find_all('span', attrs={"class":"sb-team-short"}) 
+    for i in soup:
+        print(i.string) 
     driver.close() 
 
 
