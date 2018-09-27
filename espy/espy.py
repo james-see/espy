@@ -97,16 +97,13 @@ def get_espn(selected_sport):
 
     driver = webdriver.Chrome(executable_path=os.path.abspath("/usr/local/bin/chromedriver"), chrome_options=chrome_options)  
     driver.get(f"http://www.espn.com/{selected_sport}/scoreboard")
-    # search_field = driver.find_element_by_id("site-search")  
-    # search_field.clear()  
-    # search_field.send_keys("Olabode")  
-    # search_field.send_keys(Keys.RETURN)  
-    # assert "Looking Back at Android Security in 2016" in driver.page_source 
-    # print(driver.page_source)
+
     soup = BeautifulSoup(driver.page_source, features="lxml")
-    soup = soup.find_all('span', attrs={"class":"sb-team-short"}) 
-    for i in soup:
-        print(i.string) 
+    cprint("This week's lineup\n", "blue")
+    teamsthisweek = soup.find_all('span', attrs={"class":"sb-team-short"}) 
+    for (index, thing) in enumerate(teamsthisweek[:-1]):
+        current, next_ = thing, teamsthisweek[index + 1]
+        print(f'{current.string} vs. {next_.string}')
     driver.close() 
 
 
@@ -118,8 +115,8 @@ def main():
         # random comment here for no reason ;)
         formatter_class=argparse.RawTextHelpFormatter,
         prog='espy',
-        description='++++++++++++++++++++++++++++\n+++ espy +++++++++++++++++++\n+++ s0c1@l m3d1a sc@nn3r +++\n++++++++++++++++++++++++++++',
-        epilog = '''EXAMPLE: \n check instagram \n espy jamesanthonycampbell \n ''')
+        description='++++++++++++++++++++++++++++\n+++ espy +++++++++++++++++++\n+++ nfl scores +++\n++++++++++++++++++++++++++++',
+        epilog = '''EXAMPLE: \n get scores \n espy -s nfl \n ''')
 
     parser.add_argument('-s','--sport', help='sport, like nfl', dest='sport', required=True)
 
@@ -157,101 +154,14 @@ def main():
     if vu:
         cprint('\nUseragent set as %s\n' % (useragent,),'blue')
     headers = {'User-Agent': useragent}
-    print(f'Useragent: {useragent}')
+
+    # print useragent to make sure it is working - jc
+    # print(f'Useragent: {useragent}')
+
+    # get nfl scores example url: http://www.espn.com/nfl/scoreboard/_/year/2018/seasontype/2/week/3
     get_espn(args.sport)
-    exit()
-    i = 0 # counter for how many are 200's
-    social_networks_list=['https://twitter.com/','https://www.instagram.com/','https://www.linkedin.com/in/','https://foursquare.com/','https://www.flickr.com/photos/','https://www.facebook.com/','https://www.reddit.com/user/','https://new.vk.com/','https://github.com/','https://ok.ru/','https://www.twitch.tv/','https://venmo.com/','http://www.goodreads.com/','http://www.last.fm/user/','https://api.spotify.com/v1/users/','https://www.pinterest.com/','https://keybase.io/','https://bitbucket.org/','https://pinboard.in/u:','https://disqus.com/by/','https://badoo.com/profile/','http://steamcommunity.com/id/','http://us.viadeo.com/en/profile/','https://www.periscope.tv/','https://www.researchgate.net/profile/','https://www.etsy.com/people/','https://myspace.com/','http://del.icio.us/','https://my.mail.ru/community/','https://www.xing.com/profile/']
-    totalnetworks = len(social_networks_list) # get the total networks to check
-    print('\n\n[*] Starting to process list of {} social networks now [*]\n\n'.format(totalnetworks))
-    for soc in social_networks_list:
-        # get domain name
-        domainname = urlparse(soc).netloc
-        domainnamelist = domainname.split('.')
-        for domainer in domainnamelist:
-            if len(domainer) > 3 and domainer != 'vk' and domainer != 'ok' and domainer != 'last' and domainer != 'mail':
-                realdomain = domainer
-            elif domainer == 'vk':
-                realdomain = domainer
-            elif domainer == 'ok':
-                realdomain = domainer+'.ru'
-            elif domainer == 'last':
-                realdomain = domainer+'.fm'
-            elif domainer == 'mail':
-                realdomain = domainer+'.ru'
-        # get proxy settings if any
-        if proxyoverride == True:
-            if usingtor:
-                socks_proxy = "socks5://"+setproxy[0]
-                proxyDict = { "http" : socks_proxy }
-            else:
-            #print(setproxy)
-                http_proxy  = "http://"+setproxy[0]
-                https_proxy = "https://"+setproxy[0]
-                proxyDict = {
-                              "http"  : http_proxy,
-                              "https" : https_proxy
-                            }
-        sleep(randint(1,setwait))
-        sys.stdout.flush()
-        # try to load the social network for the respective user name
-        # make sure to load proxy if proxy set otherwise don't pass a proxy arg
-        # DONT FORGET TO HANDLE LOAD TIMEOUT ERRORS! - ADDED exception handlers finally 2-5-2017 JC
-        if proxyoverride == True:
-            try:
-                r=requests.get(soc+username,stream=True, headers=headers, proxies=proxyDict)
-            except requests.Timeout as err:
-                print(err)
-                continue
-            except requests.RequestException as err:
-                print(err)
-                continue
-        else:
-            try:
-                r=requests.get(soc+username,stream=True, headers=headers)
-            except requests.Timeout as err:
-                print(err)
-                continue
-            except requests.RequestException as err:
-                print(err)
-                continue
-        # switch user agents again my friend
-        if overrideuseragent == False:
-            useragent = random.choice(useragents)
-            # if user agent override not set, select random from list
-        if vu: # if verbose output then print the user agent string
-            cprint('\nUseragent set as %s\n' % (useragent,),'blue')
-        if soc == 'https://www.instagram.com/' and r.status_code == 200:
-            #print(r.text)
-            soup = BeautifulSoup(r.content,'html.parser')
-            aa = soup.find("meta", {"property":"og:image"})
-            # test instagram profile image print
-            #print (aa['content']) # this is the instagram profile image
-            instagram_profile_img = requests.get(aa['content']) # get instagram profile pic
-            open('./'+username+'.jpg' , 'wb').write(instagram_profile_img.content)
-            #exit()
-        try:
-            total_length = int(r.headers.get('content-length'))
-        except:
-            total_length = 102399
-        for chunk in progress.dots(r.iter_content(chunk_size=1024),label='Loading '+realdomain):
-            sleep(random.random() * 0.2)
-            if chunk:
-                #sys.stdout.write(str(chunk))
-                sys.stdout.flush()
-        sys.stdout.flush()
-    #print(r.text)
-        if r.status_code == 200:
-            cprint("user found @ {}".format(soc+username),'green')
-            i = i+1
-        else:
-            cprint("Status code: {} no user found".format(r.status_code),'red')
-    print('\n\n[*] Total networks with username found: {} [*]\n'.format(i))
-    if reporting: # if pdf reporting is turned on (default on)
-        create_pdf(username)
-        cprint('Report saved as {}-report.pdf. \nTo turn off this feature use the --no-report flag.\n'.format(username),'yellow')
-# class Boo(stuff.Stuff):
-#     pass
 
 if __name__ == '__main__':
     main()
+
+exit()
