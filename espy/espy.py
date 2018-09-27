@@ -89,6 +89,8 @@ def test_selenium():
     print(driver.page_source)  
     driver.close() 
 
+
+
 def get_espn(selected_sport):
     """Selenium scraper."""
     chrome_options = Options()  
@@ -105,7 +107,10 @@ def get_espn(selected_sport):
         current, next_ = thing, teamsthisweek[index + 1]
         print(f'{current.string} vs. {next_.string}')
     driver.close() 
-
+    prevweekinput = input('Do you want to see scores for previous week? (y/n)? : ')
+    if prevweekinput in ['y', 'Y']:
+        exit("Previous week's scores coming soon. Thanks")
+    return
 
 def main():
     # welcome to the danger zone
